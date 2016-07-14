@@ -43,8 +43,12 @@ def cli(zoneid, fqdn, from_record_set_id, to_record_set_id, rate):
     # filter records to matching exact names
     from_record = None
     to_record = None
+    fqdn_existed = False
+
     for rec in records['ResourceRecordSets']:
         if rec['Name'] == fqdn:
+            fqdn_existed = True
+
             try:
                 if rec['SetIdentifier'] == from_record_set_id:
                     from_record = rec
@@ -56,7 +60,14 @@ def cli(zoneid, fqdn, from_record_set_id, to_record_set_id, rate):
                 pass
         else:
             pass
-
+            
+    if not fqdn_existed:
+        click.secho(
+            'ERROR:\tDNS record {0} could not be found. Did you miss . at the end?'.format(fqdn),
+            fg='red'
+        )
+        sys.exit(1)
+                
     if not from_record:
         click.secho(
             'ERROR:\tSpecified FROM record set identifier {0} could not be found'.format(from_record_set_id),
